@@ -10,7 +10,7 @@ stockfish_loc = script_dir[:-13] + relative_path
 #Stockfish location
 engine = chess.engine.SimpleEngine.popen_uci(stockfish_loc)
 board = chess.Board()
-
+# game is running
 while not board.is_game_over():
     result = engine.play(board, chess.engine.Limit(time=0.1))
     print(result.move)
