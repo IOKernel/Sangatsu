@@ -4,6 +4,9 @@ import os
 import time
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 #files locations
 script_dir = os.path.abspath(__file__)
@@ -47,7 +50,24 @@ def startGame():
         board.push(move)
     engine.quit()
 
-
+def detectMoves(browser):
+    # white move = 0, black move = 1
+    colors = [1, 0]
+    try:
+        for moveNumber in range(1,500):
+            color = colors[moveNumber%2]
+            turn = (moveNumber+1)//2
+            print("waiting for the next move")
+            xpath = f"/html/body/div[3]/div/div[1]/div[1]/div/div[1]/div/div/div[{turn}]/span[{color+2}]/span[contains(@class, 'vertical-move-list-clickable')]"
+            element = WebDriverWait(browser, 120).until(
+            EC.presence_of_element_located((By.XPATH, xpath))
+            )
+            move = browser.find_element_by_xpath(xpath)
+            print(moveNumber, move.text)
+            # ADD IMPLICIT WAIT
+            # DETECT GAME OVER
+    except:
+        return
 
 def main():
     browser = startBrowser()
@@ -56,7 +76,7 @@ def main():
     #initialize engine and board
     engine = chess.engine.SimpleEngine.popen_uci(stockfish_loc)
     board = chess.Board()
-    engine.quit()
-
+    detectMoves(browser)
+    browser.quit()
 
 main()
