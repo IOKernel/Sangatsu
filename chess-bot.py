@@ -20,8 +20,10 @@ def getCred():
 
 #start selenium firefox
 def startBrowser():
+    profile = webdriver.FirefoxProfile()
+    profile.set_preference("general.useragent.override", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:79.0) Gecko/20100101 Firefox/79.0")
     gecko_loc = script_dir[:-12] + "geckodriver.exe"
-    browser = webdriver.Firefox(executable_path=gecko_loc)
+    browser = webdriver.Firefox(profile, executable_path=gecko_loc)
     # login to chess.com
     browser.get("https://www.chess.com/login")
     return browser
