@@ -40,28 +40,15 @@ def login(browser, username, password):
     passwordBox.send_keys(password)
     passwordBox.send_keys(Keys.RETURN)
     time.sleep(5)
-    browser.get("https://www.chess.com/live")
+    browser.get("https://www.chess.com/live")  
 
-def engineshitlater():
-    # create PGN file for the game
-    while not board.is_game_over():
-        suggestedMove = engine.play(board, chess.engine.Limit(time=0.1))
-        print(suggestedMove.move)
-        playerMove = input()
-        move = chess.Move.from_uci(playerMove)
-        board.push(move)
-    engine.quit()
-
-def play_game(browser):
-    # white move = 0, black move = 1
-    pgn = create_pgn()
-    try:
-        for moveNumber in range(1,500):
-            next_move = detect_move(browser, moveNumber)
-            with open(pgn, "a") as f:
-                f.write(next_move)
-    except:
-        return
+def create_pgn():
+    time_now = datetime.now()
+    dt_string = time_now.strftime("%d-%m-%Y_%H-%M")
+    pgn_loc = script_dir[:-12]+"history/" + dt_string + ".pgn"
+    print(pgn_loc)
+    open(pgn_loc, "w+").close
+    return pgn_loc
 
 def detect_move(browser, moveNumber):
     colors = [1, 0]
@@ -83,13 +70,28 @@ def detect_move(browser, moveNumber):
     else:
         return move.text + " "
 
-def create_pgn():
-    time_now = datetime.now()
-    dt_string = time_now.strftime("%d-%m-%Y_%H-%M")
-    pgn_loc = script_dir[:-12]+"history/" + dt_string + ".pgn"
-    print(pgn_loc)
-    open(pgn_loc, "w+").close
-    return pgn_loc
+def get_move(engine, pgn):
+    with open(pgn, "r") as f:
+        game = chess.pgn.read_game(f)
+        board = chess.Board()
+        for move in game.mainline_moves():
+            board.push(move)
+        best_move = engine.play(board, chess.engine.Limit(depth=14)).move 
+        print(best_move)
+            
+
+
+def play_game(browser, engine):
+    # white move = 0, black move = 1
+    pgn = create_pgn()
+    try:
+        for moveNumber in range(1,500):
+            next_move = detect_move(browser, moveNumber)
+            with open(pgn, "a") as f:
+                f.write(next_move)
+            get_move(engine, pgn)
+    except:
+        return
 
 def main():
     browser = startBrowser()
@@ -97,8 +99,7 @@ def main():
     login(browser, username, password)
     #initialize engine and board
     engine = chess.engine.SimpleEngine.popen_uci(stockfish_loc)
-    board = chess.Board()
-    play_game(browser)
+    play_game(browser, engine,)
     browser.close()
 
 main()
