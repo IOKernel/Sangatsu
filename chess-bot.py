@@ -97,9 +97,15 @@ def main():
     browser = startBrowser()
     username, password = getCred()
     login(browser, username, password)
-    #initialize engine and board
+    #initialize engine
     engine = chess.engine.SimpleEngine.popen_uci(stockfish_loc)
-    play_game(browser, engine,)
+    play_more = 1
+    while play_more:
+        play_game(browser, engine)
+        answer = input("play more?")
+        if answer != 'y':
+            play_more = 0
     browser.close()
+    engine.close()
 
 main()
