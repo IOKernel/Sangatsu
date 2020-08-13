@@ -1,7 +1,9 @@
 import chess
 import chess.engine
+import chess.pgn
 import os
 import time
+from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
@@ -40,8 +42,8 @@ def login(browser, username, password):
     time.sleep(5)
     browser.get("https://www.chess.com/live")
 
-def startGame():
-    # game is running
+def engineshitlater():
+    # create PGN file for the game
     while not board.is_game_over():
         suggestedMove = engine.play(board, chess.engine.Limit(time=0.1))
         print(suggestedMove.move)
@@ -50,24 +52,44 @@ def startGame():
         board.push(move)
     engine.quit()
 
-def detectMoves(browser):
+def play_game(browser):
     # white move = 0, black move = 1
-    colors = [1, 0]
+    pgn = create_pgn()
     try:
         for moveNumber in range(1,500):
-            color = colors[moveNumber%2]
-            turn = (moveNumber+1)//2
-            print("waiting for the next move")
-            xpath = f"/html/body/div[3]/div/div[1]/div[1]/div/div[1]/div/div/div[{turn}]/span[{color+2}]/span[contains(@class, 'vertical-move-list-clickable')]"
-            element = WebDriverWait(browser, 120).until(
-            EC.presence_of_element_located((By.XPATH, xpath))
-            )
-            move = browser.find_element_by_xpath(xpath)
-            print(moveNumber, move.text)
-            # ADD IMPLICIT WAIT
-            # DETECT GAME OVER
+            next_move = detect_move(browser, moveNumber)
+            with open(pgn, "a") as f:
+                f.write(next_move)
     except:
         return
+
+def detect_move(browser, moveNumber):
+    colors = [1, 0]
+    next_move = ""
+    color = colors[moveNumber%2]
+    turn = (moveNumber+1)//2
+    xpath = f"/html/body/div[3]/div/div[1]/div[1]/div/div[1]/div/div/div[{turn}]/span[{color+2}]/span[contains(@class, 'vertical-move-list-clickable')]"
+    WebDriverWait(browser, 120).until(
+    EC.presence_of_element_located((By.XPATH, xpath))
+    )
+    move = browser.find_element_by_xpath(xpath)
+    print(moveNumber, move.text)
+    # Check if game is over
+    if move.text[0].isdigit():
+        print("GAME OVER")
+        return #GAME OVER
+    if moveNumber % 2 == 1:
+        return str(turn) + "." + move.text + " "
+    else:
+        return move.text + " "
+
+def create_pgn():
+    time_now = datetime.now()
+    dt_string = time_now.strftime("%d-%m-%Y_%H-%M")
+    pgn_loc = script_dir[:-12]+"history/" + dt_string + ".pgn"
+    print(pgn_loc)
+    open(pgn_loc, "w+").close
+    return pgn_loc
 
 def main():
     browser = startBrowser()
@@ -76,7 +98,7 @@ def main():
     #initialize engine and board
     engine = chess.engine.SimpleEngine.popen_uci(stockfish_loc)
     board = chess.Board()
-    detectMoves(browser)
-    browser.quit()
+    play_game(browser)
+    browser.close()
 
 main()

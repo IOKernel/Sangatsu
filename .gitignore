@@ -2,3 +2,4 @@
 *.log
 # credentials
 credentials.txt
+history/
