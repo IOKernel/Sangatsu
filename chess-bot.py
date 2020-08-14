@@ -88,6 +88,8 @@ def play_game(driver, engine, auto_start):
             time.sleep(1)
             driver.find_element_by_xpath("//li[@data-tab='challenge']").click()
             driver.find_element_by_class_name("quick-challenge-play").click()
+        else:
+            print("could not initiate game")
     pgn = create_pgn()
     time.sleep(1)
     try:
