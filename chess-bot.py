@@ -24,42 +24,41 @@ def getCred():
     return [username, password]
 
 #start selenium firefox
-def startBrowser():
+def startdriver():
     profile = webdriver.FirefoxProfile()
     profile.set_preference("general.useragent.override", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:79.0) Gecko/20100101 Firefox/79.0")
     gecko_loc = script_dir[:-12] + "geckodriver.exe"
-    browser = webdriver.Firefox(profile, executable_path=gecko_loc)
+    driver = webdriver.Firefox(profile, executable_path=gecko_loc)
     # login to chess.com
-    browser.get("https://www.chess.com/login")
-    return browser
+    driver.get("https://www.chess.com/login")
+    return driver
 
-def login(browser, username, password):
-    usernameBox = browser.find_element_by_id("username")
+def login(driver, username, password):
+    usernameBox = driver.find_element_by_id("username")
     usernameBox.send_keys(username)
-    passwordBox = browser.find_element_by_id("password")
+    passwordBox = driver.find_element_by_id("password")
     passwordBox.send_keys(password)
     passwordBox.send_keys(Keys.RETURN)
     time.sleep(5)
-    browser.get("https://www.chess.com/live")  
+    driver.get("https://www.chess.com/live")  
 
 def create_pgn():
     time_now = datetime.now()
     dt_string = time_now.strftime("%d-%m-%Y_%H-%M")
     pgn_loc = script_dir[:-12]+"history/" + dt_string + ".pgn"
-    print(pgn_loc)
     open(pgn_loc, "w+").close
     return pgn_loc
 
-def detect_move(browser, moveNumber):
+def detect_move(driver, moveNumber):
     colors = [1, 0]
     next_move = ""
     color = colors[moveNumber%2]
     turn = (moveNumber+1)//2
     xpath = f"/html/body/div[3]/div/div[1]/div[1]/div/div[1]/div/div/div[{turn}]/span[{color+2}]/span[contains(@class, 'vertical-move-list-clickable')]"
-    WebDriverWait(browser, 120).until(
+    WebDriverWait(driver, 120).until(
     EC.presence_of_element_located((By.XPATH, xpath))
     )
-    move = browser.find_element_by_xpath(xpath)
+    move = driver.find_element_by_xpath(xpath)
     print(moveNumber, move.text)
     # Check if game is over
     if move.text[0].isdigit():
@@ -76,36 +75,66 @@ def get_move(engine, pgn):
         board = chess.Board()
         for move in game.mainline_moves():
             board.push(move)
-        best_move = engine.play(board, chess.engine.Limit(depth=14)).move 
-        print(best_move)
-            
+        best_move = engine.play(board, chess.engine.Limit(depth=14)).move
+        return(best_move)
 
-
-def play_game(browser, engine):
+def play_game(driver, engine):
     # white move = 0, black move = 1
+    try:
+        time.sleep(1)
+        new_match = driver.find_element_by_class_name("game-over-button-button").click()
+    except:
+        time.sleep(1)
+        driver.find_element_by_xpath("//li[@data-tab='challenge']").click()
+        driver.find_element_by_class_name("quick-challenge-play").click()
     pgn = create_pgn()
+    time.sleep(1)
     try:
         for moveNumber in range(1,500):
-            next_move = detect_move(browser, moveNumber)
+            next_move = detect_move(driver, moveNumber)
             with open(pgn, "a") as f:
                 f.write(next_move)
-            get_move(engine, pgn)
+            best_move = get_move(engine, pgn)
+            highlight_move(driver, best_move)
     except:
         return
 
+def highlight_move(driver, best_move):
+    first_square = str(best_move)[:2]
+    second_square = str(best_move)[2:]
+    first_coord = str(0) + str(ord(first_square[0])-96) + str(0) + first_square[1]
+    second_coord = str(0) + str(ord(second_square[0])-96) + str(0) + second_square[1]
+    driver.execute_script("""
+    element = document.createElement('div');
+    element.setAttribute("id", "highlight1");
+    style1 = "background-color: rgb(204, 255, 255); opacity: 1;"
+    class1 = "square square-{first_coord} marked-square"
+    element.setAttribute("style", style1)
+    element.setAttribute("class", class1)
+    document.getElementById("game-board").appendChild(element)
+    element = document.createElement('div');
+    element.setAttribute("id", "highlight2");
+    style2 = "background-color: rgb(102, 255, 102); opacity: 1;"
+    class2 = "square square-{second_coord} marked-square"
+    element.setAttribute("style", style2)
+    element.setAttribute("class", class2)
+    document.getElementById("game-board").appendChild(element)
+    """.format(first_coord = first_coord, second_coord = second_coord))
+
+
 def main():
-    browser = startBrowser()
+    driver = startdriver()
     username, password = getCred()
-    login(browser, username, password)
+    login(driver, username, password)
     #initialize engine
     engine = chess.engine.SimpleEngine.popen_uci(stockfish_loc)
     play_more = 1
     while play_more:
-        play_game(browser, engine)
-        answer = input("play more?")
+        play_game(driver, engine)
+        answer = input("play more? ")
         if answer != 'y':
             play_more = 0
-    browser.close()
+    driver.close()
     engine.close()
 
 main()
