@@ -13,7 +13,7 @@ Sangatsu is a chess.com bot/cheat assistant that highlightsthe best moves for yo
 Use the package manager [pip](https://pip.pypa.io/en/stable/) to install the requirements.
 
 ```bash
-pip install requirements.txt
+pip install -r requirements.txt
 ```
 
 ## Usage
