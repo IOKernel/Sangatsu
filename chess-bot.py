@@ -78,15 +78,16 @@ def get_move(engine, pgn):
         best_move = engine.play(board, chess.engine.Limit(depth=14)).move
         return(best_move)
 
-def play_game(driver, engine):
+def play_game(driver, engine, auto_start):
     # white move = 0, black move = 1
-    try:
-        time.sleep(1)
-        new_match = driver.find_element_by_class_name("game-over-button-button").click()
-    except:
-        time.sleep(1)
-        driver.find_element_by_xpath("//li[@data-tab='challenge']").click()
-        driver.find_element_by_class_name("quick-challenge-play").click()
+    if auto_start:
+        try:
+            time.sleep(1)
+            new_match = driver.find_element_by_class_name("game-over-button-button").click()
+        except:
+            time.sleep(1)
+            driver.find_element_by_xpath("//li[@data-tab='challenge']").click()
+            driver.find_element_by_class_name("quick-challenge-play").click()
     pgn = create_pgn()
     time.sleep(1)
     try:
@@ -129,12 +130,15 @@ def main():
     #initialize engine
     engine = chess.engine.SimpleEngine.popen_uci(stockfish_loc)
     play_more = 1
+    auto_start = 0
     while play_more:
-        play_game(driver, engine)
+        play_game(driver, engine, auto_start)
         answer = input("play more? ")
         if answer != 'y':
             play_more = 0
+        auto_start = 1
     driver.close()
     engine.close()
 
-main()
+if __name__ == "__main__":
+    main()
