@@ -18,7 +18,13 @@ pip install -r requirements.txt
 
 ## Usage
 
-Straightforward, open chess-boy.py or use the command line.
+Straightforward, set up your credentials in a credentials.txt file with the following format
+'''
+username
+password
+'''
+
+open chess-boy.py or use the command line.
 
 ```python
 python3 chess-bot.py
