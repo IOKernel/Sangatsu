@@ -29,7 +29,7 @@ open chess-boy.py or use the command line.
 ```python
 python3 chess-bot.py
 ```
-To start a second game, type y in the terminal when prompted.
+To start a second game, type 'start' in the terminal AFTER starting a new match.
 
 
 ## Contributing
