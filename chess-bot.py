@@ -15,7 +15,7 @@ from selenium.webdriver.support import expected_conditions as EC
 #files locations
 script_dir = os.path.abspath(__file__)
 platform = platform.system()
-
+# checking platform
 if platform == 'Linux':
     relative_path = "/Engine/stockfish"
 else:
