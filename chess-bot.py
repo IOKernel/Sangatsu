@@ -15,10 +15,12 @@ from selenium.webdriver.support import expected_conditions as EC
 #files locations
 script_dir = os.path.abspath(__file__)
 platform = platform.system()
+
 if platform == 'Linux':
     relative_path = "/Engine/stockfish"
 else:
     relative_path = "/Engine/stockfish.exe"
+    
 stockfish_loc = script_dir[:-13] + relative_path
 credentials_loc = script_dir[:-12] + "credentials.txt"
 
