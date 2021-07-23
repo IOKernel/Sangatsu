@@ -2,6 +2,7 @@ import chess
 import chess.engine
 import chess.pgn
 import os
+import platform
 import time
 from configparser import ConfigParser
 from datetime import datetime
@@ -13,7 +14,11 @@ from selenium.webdriver.support import expected_conditions as EC
 
 #files locations
 script_dir = os.path.abspath(__file__)
-relative_path = "/Engine/stockfish.exe"
+platform = platform.system()
+if platform == 'Linux':
+    relative_path = "/Engine/stockfish"
+else:
+    relative_path = "/Engine/stockfish.exe"
 stockfish_loc = script_dir[:-13] + relative_path
 credentials_loc = script_dir[:-12] + "credentials.txt"
 
@@ -32,7 +37,10 @@ def getCred():
 def startdriver():
     profile = webdriver.FirefoxProfile()
     profile.set_preference("general.useragent.override", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:79.0) Gecko/20100101 Firefox/79.0")
-    gecko_loc = script_dir[:-12] + "geckodriver.exe"
+    if platform == 'Linux':
+        gecko_loc = script_dir[:-12] + "geckodriver"
+    else:
+        gecko_loc = script_dir[:-12] + "geckodriver.exe"
     driver = webdriver.Firefox(profile, executable_path=gecko_loc)
     # login to chess.com
     driver.get("https://www.chess.com/login")
