@@ -1,6 +1,6 @@
 # logs
 *.log
-# credentials
+credentials.txt
 /history/
 #geckodrivers
 geckodriver
