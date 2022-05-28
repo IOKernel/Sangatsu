@@ -4,7 +4,6 @@ import chess.pgn
 import os
 import platform
 import time
-from configparser import ConfigParser
 from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -55,7 +54,7 @@ def login(driver, username, password):
     passwordBox.send_keys(password)
     passwordBox.send_keys(Keys.RETURN)
     time.sleep(5)
-    driver.get("https://www.chess.com/live")  
+    driver.get("https://www.chess.com/play/online")  
 
 def create_pgn():
     time_now = datetime.now()
@@ -63,26 +62,6 @@ def create_pgn():
     pgn_loc = script_dir[:-12]+"history/" + dt_string + ".pgn"
     open(pgn_loc, "w+").close
     return pgn_loc
-
-def detect_move(driver, moveNumber):
-    colors = [1, 0]
-    next_move = ""
-    color = colors[moveNumber%2]
-    turn = (moveNumber+1)//2
-    xpath = f"/html/body/div[3]/div/div[1]/div[1]/div/div[1]/div/div/div[{turn}]/span[{color+2}]/span[contains(@class, 'vertical-move-list-clickable')]"
-    WebDriverWait(driver, 120).until(
-    EC.presence_of_element_located((By.XPATH, xpath))
-    )
-    move = driver.find_element_by_xpath(xpath)
-    print(moveNumber, move.text)
-    # Check if game is over
-    if move.text[0].isdigit():
-        print("GAME OVER")
-        return #GAME OVER
-    if moveNumber % 2 == 1:
-        return str(turn) + "." + move.text + " "
-    else:
-        return move.text + " "
 
 # gets the best move
 def get_move(engine, pgn, depth):
@@ -94,70 +73,6 @@ def get_move(engine, pgn, depth):
         best_move = engine.play(board, chess.engine.Limit(depth=depth)).move
         return(best_move)
 
-# the game play function that calls all of the other functions
-def play_game(driver, engine, auto_start, depth):
-    # white move = 0, black move = 1
-    if auto_start:
-        try:
-            time.sleep(1)
-            new_match = driver.find_element_by_class_name("game-over-button-button").click()
-        except:
-            time.sleep(1)
-            driver.find_element_by_xpath("//li[@data-tab='challenge']").click()
-            driver.find_element_by_class_name("quick-challenge-play").click()
-        else:
-            print("could not initiate game.. waiting for a match to start")
-    pgn = create_pgn()
-    time.sleep(1)
-    try:
-        for moveNumber in range(1,500):
-            next_move = detect_move(driver, moveNumber)
-            with open(pgn, "a") as f:
-                f.write(next_move)
-            start_time = time.time()
-            best_move = get_move(engine, pgn, depth)
-            end_time = time.time()
-            print(end_time-start_time)
-            highlight_move(driver, best_move)
-    except:
-        return
-
-# highlights the moves on board with JS
-def highlight_move(driver, best_move):
-    first_square = str(best_move)[:2]
-    second_square = str(best_move)[2:]
-    first_coord = str(0) + str(ord(first_square[0])-96) + str(0) + first_square[1]
-    second_coord = str(0) + str(ord(second_square[0])-96) + str(0) + second_square[1]
-    driver.execute_script("""
-    element = document.createElement('div');
-    element.setAttribute("id", "highlight1");
-    style1 = "background-color: rgb(204, 255, 255); opacity: 1;"
-    class1 = "square square-{first_coord} marked-square"
-    element.setAttribute("style", style1)
-    element.setAttribute("class", class1)
-    document.getElementById("game-board").appendChild(element)
-    element = document.createElement('div');
-    element.setAttribute("id", "highlight2");
-    style2 = "background-color: rgb(102, 255, 102); opacity: 1;"
-    class2 = "square square-{second_coord} marked-square"
-    element.setAttribute("style", style2)
-    element.setAttribute("class", class2)
-    document.getElementById("game-board").appendChild(element)
-    """.format(first_coord = first_coord, second_coord = second_coord))
-
-def set_options():
-    config = ConfigParser()
-    config['DEFAULT'] = {'depth': '14',
-                         'autoStart': '0'}
-    with open('config.ini', 'w') as f:
-        config.write(f)
-
-def read_options():
-    config = ConfigParser()
-    config.read('config.ini')
-    depth = int(config['DEFAULT']['depth'])
-    auto_start = int(config['DEFAULT']['autoStart'])
-    return depth, auto_start
 
 def main():
     driver = startdriver()
@@ -165,16 +80,7 @@ def main():
     login(driver, username, password)
     #initialize engine
     engine = chess.engine.SimpleEngine.popen_uci(stockfish_loc)
-    play_more = 1
-    depth, auto_start = read_options()
-    while play_more:
-        play_game(driver, engine, auto_start, depth)
-        answer = input("type 'start' when your next match starts, or type no to quit: ")
-        if answer != 'start':
-            play_more = 0
-        #auto_start = 1
-    driver.close()
-    engine.close()
 
 if __name__ == "__main__":
     main()
+    
