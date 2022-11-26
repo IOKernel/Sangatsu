@@ -24,10 +24,10 @@ username
 password
 ```
 
-open chess-boy.py or use the command line.
+open sangatsu.py or use the command line.
 
 ```python
-python3 chess-bot.py
+python3 sangatsu.py
 ```
 to play a second game, close the analysis of the previous game and then type y in the terminal
 
