@@ -2,7 +2,13 @@
 *.log
 credentials.txt
 /history/
+/bin/*
 #geckodrivers
 geckodriver
 credentials.txt
 .python-version
+*.ipynb
+*.pyc
+*.pyo
+*.pyd
+*__pycache__*
