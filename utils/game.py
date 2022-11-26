@@ -13,6 +13,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from utils import helpers as hp
 
 SCRIPT_DIR = os.path.dirname(os.path.dirname(__file__))
+DEPTH = 17
 
 def get_top_moves(board, engine, depth, num_moves):
     info = engine.analyse(board, chess.engine.Limit(depth=depth))
@@ -54,7 +55,7 @@ def play_game(driver, engine):
         if board.is_checkmate():
             save_game(board, board.result())
             return move
-        moves = get_top_moves(board, engine, 13, 3)
+        moves = get_top_moves(board, engine, DEPTH, 3)
         # for move in moves:
         #     hp.highlight_move(driver, move)
         hp.highlight_move(driver, moves[0])
