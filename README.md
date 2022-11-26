@@ -11,6 +11,8 @@ Sangatsu is a chess.com bot/cheat assistant that highlightsthe best moves for yo
 ## Installation
 
 Use the package manager [pip](https://pip.pypa.io/en/stable/) to install the requirements.
+Note: this was tested on python 3.10, it may not work on other versions.
+
 
 ```bash
 pip install -r requirements.txt
