@@ -31,7 +31,7 @@ open sangatsu.py or use the command line.
 ```python
 python3 sangatsu.py
 ```
-to play a second game, close the analysis of the previous game and then type y in the terminal
+If you join a tournament, click on Analysis tab after game is over so the bot can parse the game.
 
 
 ## Contributing
