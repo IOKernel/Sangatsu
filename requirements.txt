@@ -1,3 +1,4 @@
 selenium
 chess
 beautifulsoup4
+requests

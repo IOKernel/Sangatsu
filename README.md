@@ -17,6 +17,8 @@ Note: this was tested on python 3.10, it may not work on other versions.
 ```bash
 pip install -r requirements.txt
 ```
+NOTE: Change the piece notations in chess.com from figures to text or it won't work.
+
 
 ## Usage
 
