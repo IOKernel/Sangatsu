@@ -64,6 +64,12 @@ def get_requirements(OS):
         print('Creating history folder...')
         os.mkdir(history_folder)
         print('Done!')
+    # check if bin folder exists
+    bin_folder = os.path.join(SCRIPT_DIR, 'bin')
+    if not os.path.isdir(bin_folder):
+        print('Creating bin folder...')
+        os.mkdir(bin_folder)
+        print('Done!')
     return username, password
 
 def start_driver(username, password):
