@@ -36,7 +36,7 @@ def detect_move(driver, move_number:int , turn: bool):
     # wait for either the move or the game to end
     # xpath = //move-list-wrapper/vertical-move-list/div[3]/div[1]
     turn_val = 1 if turn else 3
-    move = WebDriverWait(driver, 60).until(
+    move = WebDriverWait(driver, 360).until(
         EC.presence_of_element_located((By.XPATH, f'//move-list-wrapper/vertical-move-list/div[{move_number}]/div[{turn_val}]')))
     return move.text
 
