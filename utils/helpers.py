@@ -97,6 +97,25 @@ def start_driver(username, password):
     driver.get("https://www.chess.com/play/online")
     return driver
 
+def detect_bot_game(driver):
+    # check if the game is a bot game by searching custom tag <chess-board> with attribute id="board-vs-personalities"
+    soup = BeautifulSoup(driver.page_source, 'html.parser')
+    is_bot_game = soup.find('chess-board', id='board-vs-personalities')
+    if not is_bot_game:
+        return False
+    # wait for board-id to be visible
+    board_id = WebDriverWait(driver, 60).until(
+        EC.presence_of_element_located((By.TAG_NAME, "vertical-move-list"))
+    )
+    # check if board-id is "board-vs-personalities"
+    soup = BeautifulSoup(driver.page_source, 'html.parser')
+    board_id = soup.find('vertical-move-list')['board-id']
+    if board_id == 'board-vs-personalities':
+        print('Bot game detected!')
+        return True
+    else:
+        return False
+
 def detect_game(driver):
     # or in span class tabs-label with Value: Analysis or Play under div with class tabs-tab and data-tab="game"
     # check the value of the tab using bs4
@@ -105,7 +124,11 @@ def detect_game(driver):
     if tab_name:
         tab_name = tab_name.text
     else:
-        raise Exception('Could not find tabs!')
+        is_bot_game = detect_bot_game(driver)
+        if is_bot_game:
+            return True
+        else:
+            raise Exception('Could not find tabs!')
     if tab_name == 'Analysis':
         return False
     elif tab_name == 'Play':

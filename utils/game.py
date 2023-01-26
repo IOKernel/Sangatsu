@@ -32,28 +32,51 @@ def start_engine():
     engine = chess.engine.SimpleEngine.popen_uci(os.path.join(SCRIPT_DIR, 'bin', 'stockfish'))
     return engine
 
-def detect_move(driver, move_number:int , turn: bool):
+def detect_move(driver, move_number:int , turn: bool, bot_game = False, timeout=360):
     # wait for either the move or the game to end
     # xpath = //move-list-wrapper/vertical-move-list/div[3]/div[1]
-    turn_val = 1 if turn else 3
-    move = WebDriverWait(driver, 360).until(
-        EC.presence_of_element_located((By.XPATH, f'//move-list-wrapper/vertical-move-list/div[{move_number}]/div[{turn_val}]')))
+    if bot_game:
+        turn_val = 1 if turn else 2
+    else:
+        turn_val = 1 if turn else 3
+    # move = WebDriverWait(driver, timeout).until(
+    #     EC.presence_of_element_located((By.XPATH, f'//vertical-move-list/div[{move_number}]/div[{turn_val}]')))
+    # loop in 5 second intervals over timeout period to check for div[move_number]/div[turn_val] or div[move_number]/span
+    # if div[move_number]/span is found, game has ended
+    # if div[move_number]/div[turn_val] is found, move has been made
+
+    for i in range(timeout//5):
+        try:
+            move = WebDriverWait(driver, 5).until(
+                EC.presence_of_element_located((By.XPATH, f'//vertical-move-list/div[{move_number}]/div[{turn_val}]')))
+            break
+        except:
+            try:
+                # check without waiting
+                move = driver.find_element_by_xpath(f'//vertical-move-list/div[{move_number}]/span')
+                break
+            except:
+                pass
     return move.text
 
 def play_game(driver, engine):
     board = chess.Board()
+    is_bot_game = hp.detect_bot_game(driver)
     while True:
         turn = board.turn
         move_number = board.fullmove_number
-        move = detect_move(driver, move_number, turn)
+        move = detect_move(driver, move_number, turn, bot_game=is_bot_game)
+        print(move)
         hp.remove_highlight(driver)
         if move[0].isdigit():
+            print("Game ended!")
             save_game(board, move)
             return move
         # check if move is valid
         board.push_san(move)
         if board.is_checkmate():
             save_game(board, board.result())
+            print("Game ended!")
             return move
         moves = get_top_moves(board, engine, DEPTH, 3)
         # for move in moves:
